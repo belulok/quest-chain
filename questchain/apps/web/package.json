@@ -9,10 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mysten/dapp-kit": "^0.15.6",
+    "@mysten/enoki": "^0.6.5",
+    "@mysten/sui": "^1.28.0",
     "@mysten/sui.js": "^0.54.1",
     "@mysten/zklogin": "latest",
-    "@tanstack/react-query": "^5.17.19",
+    "@mysten/zksend": "^0.12.26",
+    "@tanstack/react-query": "^5.74.4",
     "daisyui": "^4.6.0",
+    "jwt-decode": "^4.0.0",
     "next": "^14.2.0",
     "phaser": "^3.60.0",
     "react": "^18.2.0",

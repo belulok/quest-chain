@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ParallaxBackground from '@/components/ParallaxBackground';
 import PixelCharacter from '@/components/PixelCharacter';
@@ -10,8 +11,12 @@ import PixelButton from '@/components/PixelButton';
 import LoginOptions from '@/components/LoginOptions';
 import GameLogo from '@/components/GameLogo';
 import GameFooter from '@/components/GameFooter';
+import UserProfileButton from '@/components/UserProfileButton';
+import { useCustomWallet } from '@/contexts/CustomWallet';
 
 export default function Home() {
+  const { isConnected, isConnecting } = useCustomWallet();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loginVisible, setLoginVisible] = useState(false);
@@ -32,13 +37,20 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  // Redirect to world map if already logged in
+  useEffect(() => {
+    if (isConnected) {
+      router.push('/world-map');
+    }
+  }, [isConnected, router]);
+
   const handleStartClick = () => {
     setLoginVisible(true);
   };
 
   const handleLogin = (provider: 'google' | 'apple' | 'email') => {
     console.log(`Logging in with ${provider}`);
-    // In a real implementation, we would call the zkLogin flow here
+    // The actual login is handled in the LoginOptions component
     setLoginVisible(false);
   };
 
@@ -50,6 +62,10 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="container mx-auto flex flex-col items-center justify-center py-12 px-4 relative z-10">
+        {/* User Profile Button (top right) */}
+        <div className="absolute top-4 right-4">
+          <UserProfileButton />
+        </div>
         {/* Logo */}
         <GameLogo />
 
