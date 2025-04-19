@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 226, 232, 240;
+  --background-start-rgb: 15, 23, 42;
+  --background-end-rgb: 30, 41, 59;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  min-height: 100vh;
+}
+
+@layer components {
+  .pixel-btn {
+    @apply font-pixel py-2 px-6 text-xl transition-all duration-200 
+           border-2 border-primary bg-primary/20 text-primary
+           hover:bg-primary/30 hover:scale-105 active:scale-95;
+  }
+  
+  .pixel-container {
+    @apply border-2 border-primary/50 bg-background/80 p-4 rounded-md;
+  }
+  
+  .parallax-bg {
+    @apply fixed top-0 left-0 w-full h-full -z-10;
+  }
+}
