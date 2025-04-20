@@ -249,7 +249,7 @@ export class PreloadScene extends Phaser.Scene {
       this.load.image('island-full', '/assets/QuestChain Assets/island full.png');
       this.load.image('inventory-button', '/assets/QuestChain Assets/inventory button3.png');
       this.load.image('boss-raid-button', '/assets/QuestChain Assets/boss raid button.png');
-      // Google button removed to bypass zkLogin
+      this.load.image('google-button', '/assets/QuestChain Assets/google.png');
 
       // Biome backgrounds
       this.load.image('starter-bg', '/assets/backgrounds/starter-bg.png');

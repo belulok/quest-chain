@@ -57,7 +57,7 @@ export function createWalletButton(scene: Phaser.Scene, initialConnected: boolea
       const connectingText = scene.add.text(
         canvasWidth / 2,
         canvasHeight / 2,
-        'Connecting mock wallet...',
+        'Connecting wallet...',
         {
           fontFamily: 'monospace',
           fontSize: '24px',
@@ -67,7 +67,7 @@ export function createWalletButton(scene: Phaser.Scene, initialConnected: boolea
         }
       ).setOrigin(0.5).setDepth(100);
 
-      // Trigger the mock wallet connection flow
+      // Trigger the real wallet connection flow
       const result = await connectWallet();
 
       // Remove connecting message

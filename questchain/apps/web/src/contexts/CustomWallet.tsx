@@ -1,7 +1,10 @@
 'use client';
 
+import { useEnokiFlow, useZkLogin, useZkLoginSession } from '@mysten/enoki/react';
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
+import clientConfig from '@/config/clientConfig';
 
 interface CustomWalletContextType {
   isConnected: boolean;
@@ -26,18 +29,21 @@ const CustomWalletContext = createContext<CustomWalletContextType>({
 });
 
 export function CustomWalletProvider({ children }: { children: ReactNode }) {
-  // Bypass zkLogin and use a mock wallet instead
+  const { address: zkLoginAddress } = useZkLogin();
+  const zkLoginSession = useZkLoginSession();
+  const enokiFlow = useEnokiFlow();
   const router = useRouter();
 
   const [isConnecting, setIsConnecting] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-  const [address, setAddress] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<{
     name?: string;
     email?: string;
     picture?: string;
   } | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  const isConnected = !!zkLoginAddress;
+  const address = zkLoginAddress || null;
 
   useEffect(() => {
     setIsInitialized(true);
@@ -50,45 +56,60 @@ export function CustomWalletProvider({ children }: { children: ReactNode }) {
     }
   }, [isInitialized, isConnected, router]);
 
-  // Set mock user info when connected
+  // Extract user info from JWT when session changes
   useEffect(() => {
-    if (isConnected && address) {
-      setUserInfo({
-        name: 'QuestChain Player',
-        email: 'player@questchain.academy',
-        picture: '/assets/QuestChain Assets/human.png'
-      });
+    if (zkLoginSession?.jwt) {
+      try {
+        const decoded = jwtDecode(zkLoginSession.jwt);
+        setUserInfo({
+          name: (decoded as any).name,
+          email: (decoded as any).email,
+          picture: (decoded as any).picture
+        });
+      } catch (error) {
+        console.error('Failed to decode JWT:', error);
+      }
     } else {
       setUserInfo(null);
     }
-  }, [isConnected, address]);
+  }, [zkLoginSession]);
 
   const login = async () => {
     try {
       setIsConnecting(true);
 
       // Check if we're already connected
-      if (isConnected && address) {
-        console.log('Already connected with address:', address);
+      if (isConnected && zkLoginAddress) {
+        console.log('Already connected with address:', zkLoginAddress);
         return;
       }
 
-      console.log('Starting mock wallet login process...');
+      console.log('Starting login process with Enoki...');
+      console.log('Network:', clientConfig.SUI_NETWORK_NAME);
+      console.log('Client ID:', clientConfig.GOOGLE_CLIENT_ID);
 
-      // Generate a mock Sui address
-      const mockAddress = '0x' + Array.from({length: 64}, () =>
-        Math.floor(Math.random() * 16).toString(16)).join('');
+      const protocol = window.location.protocol;
+      const host = window.location.host;
+      const customRedirectUri = `${protocol}//${host}/auth`;
+      console.log('Redirect URI:', customRedirectUri);
 
-      // Set connected state
-      setIsConnected(true);
-      setAddress(mockAddress);
+      // Clear any previous session data
+      sessionStorage.removeItem('enoki-flow-session');
 
-      console.log('Mock wallet connected with address:', mockAddress);
+      const authUrl = await enokiFlow.createAuthorizationURL({
+        provider: "google",
+        network: clientConfig.SUI_NETWORK_NAME,
+        clientId: clientConfig.GOOGLE_CLIENT_ID,
+        redirectUrl: customRedirectUri,
+        extraParams: {
+          scope: ["openid", "email", "profile"],
+          // Add a random state parameter to prevent CSRF attacks and cache issues
+          state: Math.random().toString(36).substring(2, 15),
+        },
+      });
 
-      // No need to redirect for mock wallet
-      // Just simulate a successful connection
-
-      return;
+      console.log('Auth URL created, redirecting...');
+      router.push(authUrl);
     } catch (error) {
       console.error('Login failed:', error);
       alert('Login failed. Please try again.');
@@ -99,10 +120,7 @@ export function CustomWalletProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      console.log('Logging out mock wallet...');
-      setIsConnected(false);
-      setAddress(null);
-      setUserInfo(null);
+      await enokiFlow.logout();
       sessionStorage.clear();
       router.push('/');
     } catch (error) {
