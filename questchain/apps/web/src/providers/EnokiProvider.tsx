@@ -33,6 +33,10 @@ export function EnokiProvider({ children }: { children: ReactNode }) {
     mainnet: { url: getFullnodeUrl("mainnet") },
   });
 
+  // Debug: Log the Enoki API key (partially masked for security)
+  const apiKey = clientConfig.ENOKI_API_KEY;
+  console.log('Enoki API Key:', apiKey ? `${apiKey.substring(0, 10)}...` : 'Not set');
+
   return (
     <QueryClientProvider client={queryClient}>
       <SuiClientProvider
@@ -46,7 +50,7 @@ export function EnokiProvider({ children }: { children: ReactNode }) {
           }}
           storage={sessionStorageAdapter}
         >
-          <EnokiFlowProvider apiKey={clientConfig.ENOKI_API_KEY}>
+          <EnokiFlowProvider apiKey="enoki_public_3724a62c6fd1a719bb4faf0ace29c7a9">
             {children}
           </EnokiFlowProvider>
         </WalletProvider>

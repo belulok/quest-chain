@@ -87,6 +87,7 @@ export function CustomWalletProvider({ children }: { children: ReactNode }) {
       console.log('Starting login process with Enoki...');
       console.log('Network:', clientConfig.SUI_NETWORK_NAME);
       console.log('Client ID:', clientConfig.GOOGLE_CLIENT_ID);
+      console.log('Enoki API Key:', clientConfig.ENOKI_API_KEY ? `${clientConfig.ENOKI_API_KEY.substring(0, 10)}...` : 'Not set');
 
       const protocol = window.location.protocol;
       const host = window.location.host;
@@ -96,10 +97,11 @@ export function CustomWalletProvider({ children }: { children: ReactNode }) {
       // Clear any previous session data
       sessionStorage.removeItem('enoki-flow-session');
 
+      // Use hardcoded values to ensure they're properly set
       const authUrl = await enokiFlow.createAuthorizationURL({
         provider: "google",
-        network: clientConfig.SUI_NETWORK_NAME,
-        clientId: clientConfig.GOOGLE_CLIENT_ID,
+        network: "testnet",
+        clientId: "740538505233-0vbb2q24ohk1dbdb3grpoib6j6dhl1qq.apps.googleusercontent.com",
         redirectUrl: customRedirectUri,
         extraParams: {
           scope: ["openid", "email", "profile"],
