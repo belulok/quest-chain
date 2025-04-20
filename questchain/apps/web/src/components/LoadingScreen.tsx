@@ -8,19 +8,40 @@ interface LoadingScreenProps {
 
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({ progress = 0 }) => {
   return (
-    <div className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center">
-      <h1 className="font-pixel text-4xl text-primary mb-8 animate-pulse">
-        QUESTCHAIN ACADEMY
-      </h1>
-      
-      <div className="w-64 h-4 bg-gray-700 rounded-full overflow-hidden border border-gray-600 mb-4">
-        <div
-          className="h-full bg-primary transition-all duration-300 ease-out"
-          style={{ width: `${progress}%` }}
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
+      style={{
+        backgroundImage: 'url(/assets/QuestChain%20Assets/loading_bg.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
+      {/* Logo */}
+      <div className="mb-12">
+        <img
+          src="/assets/QuestChain%20Assets/logo.png"
+          alt="QuestChain Logo"
+          className="w-80 h-auto"
         />
       </div>
-      
-      <p className="font-pixel text-white">
+
+      {/* Progress Bar with pixelated border */}
+      <div className="relative w-80 h-5 mb-4">
+        {/* Border */}
+        <div className="absolute inset-0 border-2 border-white"></div>
+
+        {/* Background */}
+        <div className="absolute inset-0 bg-gray-900 m-0.5"></div>
+
+        {/* Progress */}
+        <div
+          className="absolute inset-y-0 left-0 m-0.5 bg-yellow-400 transition-all duration-300 ease-out"
+          style={{ width: `calc(${progress}% - 4px)` }}
+        />
+      </div>
+
+      {/* Loading Text */}
+      <p className="font-pixel text-white" style={{ textShadow: '1px 1px 0px #000' }}>
         {progress < 100 ? 'Loading...' : 'Ready!'}
       </p>
     </div>

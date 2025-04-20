@@ -9,7 +9,7 @@ const nextConfig = {
     // Add support for importing Phaser
     config.module.rules.push({
       test: /\.js$/,
-      include: /node_modules\/phaser/,
+      include: [/node_modules\/phaser/],
       use: {
         loader: 'babel-loader',
         options: {
@@ -17,6 +17,14 @@ const nextConfig = {
         },
       },
     });
+
+    // Enable importing of shader files
+    config.module.rules.push({
+      test: /\.(frag|vert)$/,
+      use: 'raw-loader',
+    });
+
+    // Important: return the modified config
     return config;
   },
 };

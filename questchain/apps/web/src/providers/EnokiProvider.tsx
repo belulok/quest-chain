@@ -1,12 +1,10 @@
 'use client';
 
-import { EnokiFlowProvider } from '@mysten/enoki/react';
-import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
+import { getFullnodeUrl } from '@mysten/sui/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
 import clientConfig from '@/config/clientConfig';
 import { createNetworkConfig, SuiClientProvider, WalletProvider } from '@mysten/dapp-kit';
-import { registerStashedWallet } from '@mysten/zksend';
 
 const queryClient = new QueryClient();
 
@@ -23,9 +21,7 @@ const sessionStorageAdapter = {
   },
 };
 
-// Register stashed wallet for zkLogin
-registerStashedWallet("QuestChain Academy", {});
-
+// Renamed to MockWalletProvider since we're bypassing zkLogin
 export function EnokiProvider({ children }: { children: ReactNode }) {
   const { networkConfig } = createNetworkConfig({
     devnet: { url: getFullnodeUrl("devnet") },
@@ -41,14 +37,9 @@ export function EnokiProvider({ children }: { children: ReactNode }) {
       >
         <WalletProvider
           autoConnect
-          stashedWallet={{
-            name: "QuestChain Academy",
-          }}
           storage={sessionStorageAdapter}
         >
-          <EnokiFlowProvider apiKey={clientConfig.ENOKI_API_KEY}>
-            {children}
-          </EnokiFlowProvider>
+          {children}
         </WalletProvider>
       </SuiClientProvider>
     </QueryClientProvider>

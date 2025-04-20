@@ -1,33 +1,21 @@
-module questchain::questchain {
+module questchain::questchain_simple {
     use sui::object::{Self, UID, ID};
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
     use sui::event;
-    use sui::coin::{Self, Coin};
+    use sui::coin::{Coin};
     use sui::sui::SUI;
-    use sui::package;
-    use sui::display;
     use std::string::{Self, String};
     use std::vector;
     
     // ======== Constants ========
     
-    const MAX_LEVEL: u64 = 100;
     const XP_PER_LEVEL: u64 = 1000;
-    
-    // ======== Errors ========
-    
-    const EInvalidLevel: u64 = 0;
-    const EInsufficientXP: u64 = 1;
-    const EInvalidQuestPack: u64 = 2;
     const EQuestAlreadyCompleted: u64 = 3;
-    const EInsufficientDamage: u64 = 4;
     const EBossDefeated: u64 = 5;
+    const EInvalidLevel: u64 = 0;
     
     // ======== Objects ========
-    
-    /// One-time witness for the package
-    struct QUESTCHAIN has drop {}
     
     /// Avatar NFT representing the player
     struct Avatar has key, store {
@@ -95,59 +83,6 @@ module questchain::questchain {
         xp_reward: u64,
     }
     
-    /// Emitted when a boss is damaged
-    struct BossDamaged has copy, drop {
-        boss_id: ID,
-        attacker: address,
-        damage: u64,
-        remaining_hp: u64,
-    }
-    
-    /// Emitted when a boss is defeated
-    struct BossDefeated has copy, drop {
-        boss_id: ID,
-        final_attacker: address,
-    }
-    
-    // ======== Functions ========
-    
-    fun init(witness: QUESTCHAIN, ctx: &mut TxContext) {
-        let publisher = package::claim(witness, ctx);
-        
-        // Create display info for Avatar
-        let keys = vector[
-            string::utf8(b"name"),
-            string::utf8(b"description"),
-            string::utf8(b"image_url"),
-            string::utf8(b"level"),
-            string::utf8(b"xp"),
-        ];
-        
-        let values = vector[
-            string::utf8(b"{name}"),
-            string::utf8(b"A QuestChain Academy Avatar at level {level}"),
-            string::utf8(b"{image_url}"),
-            string::utf8(b"{level}"),
-            string::utf8(b"{xp}"),
-        ];
-        
-        let display = display::new_with_fields<Avatar>(
-            &publisher, keys, values, ctx
-        );
-        display::update_version(&mut display);
-        
-        transfer::public_transfer(display, tx_context::sender(ctx));
-        transfer::public_transfer(publisher, tx_context::sender(ctx));
-        
-        // Create initial boss
-        create_boss(
-            string::utf8(b"Blockchain Behemoth"),
-            10000,
-            1,
-            ctx
-        );
-    }
-    
     /// Create a new avatar
     public fun create_avatar(
         name: String,
@@ -164,11 +99,12 @@ module questchain::questchain {
             image_url,
         };
         
-        event::emit(AvatarCreated {
+        let avatar_created = AvatarCreated {
             avatar_id: object::uid_to_inner(&avatar.id),
             owner: tx_context::sender(ctx),
             name: avatar.name,
-        });
+        };
+        event::emit(avatar_created);
         
         avatar
     }
@@ -207,7 +143,7 @@ module questchain::questchain {
     public entry fun complete_quest(
         avatar: &mut Avatar,
         quest: &mut QuestPack,
-        ctx: &mut TxContext
+        _ctx: &mut TxContext
     ) {
         // Check if quest is already completed
         assert!(!quest.completed, EQuestAlreadyCompleted);
@@ -224,29 +160,9 @@ module questchain::questchain {
         
         // Check for level up
         let new_level = (avatar.xp / XP_PER_LEVEL) + 1;
-        if new_level > avatar.level {
-            let old_level = avatar.level;
+        if (new_level > avatar.level) {
             avatar.level = new_level;
-            
-            // Emit level up event
-            event::emit(LevelUp {
-                avatar_id: object::uid_to_inner(&avatar.id),
-                new_level,
-            });
         }
-        
-        // Emit events
-        event::emit(XPGained {
-            avatar_id: object::uid_to_inner(&avatar.id),
-            xp_gained,
-            new_total_xp: avatar.xp,
-        });
-        
-        event::emit(QuestCompleted {
-            avatar_id: object::uid_to_inner(&avatar.id),
-            quest_id: object::uid_to_inner(&quest.id),
-            xp_reward: xp_gained,
-        });
     }
     
     /// Create a boss for raid battles
@@ -280,17 +196,11 @@ module questchain::questchain {
         
         // Calculate damage based on avatar level (prevent cheating)
         let max_damage = avatar.level * 10;
-        let actual_damage = if damage > max_damage { max_damage } else { damage };
+        let actual_damage = if (damage > max_damage) { max_damage } else { damage };
         
         // Apply damage
-        if actual_damage >= boss.current_hp {
+        if (actual_damage >= boss.current_hp) {
             boss.current_hp = 0;
-            
-            // Emit boss defeated event
-            event::emit(BossDefeated {
-                boss_id: object::uid_to_inner(&boss.id),
-                final_attacker: tx_context::sender(ctx),
-            });
             
             // Create loot chest for the player
             let loot_chest = LootChest {
@@ -306,14 +216,6 @@ module questchain::questchain {
         } else {
             boss.current_hp = boss.current_hp - actual_damage;
         }
-        
-        // Emit boss damaged event
-        event::emit(BossDamaged {
-            boss_id: object::uid_to_inner(&boss.id),
-            attacker: tx_context::sender(ctx),
-            damage: actual_damage,
-            remaining_hp: boss.current_hp,
-        });
     }
     
     /// Create a loot chest
@@ -334,8 +236,8 @@ module questchain::questchain {
     public entry fun open_chest(
         chest: &mut LootChest,
         avatar: &mut Avatar,
-        payment: &mut Coin<SUI>,
-        ctx: &mut TxContext
+        _payment: &mut Coin<SUI>,
+        _ctx: &mut TxContext
     ) {
         // Check if chest is already opened
         assert!(!chest.opened, EQuestAlreadyCompleted);
@@ -351,22 +253,9 @@ module questchain::questchain {
         
         // Check for level up
         let new_level = (avatar.xp / XP_PER_LEVEL) + 1;
-        if new_level > avatar.level {
+        if (new_level > avatar.level) {
             avatar.level = new_level;
-            
-            // Emit level up event
-            event::emit(LevelUp {
-                avatar_id: object::uid_to_inner(&avatar.id),
-                new_level,
-            });
         }
-        
-        // Emit XP gained event
-        event::emit(XPGained {
-            avatar_id: object::uid_to_inner(&avatar.id),
-            xp_gained: xp_reward,
-            new_total_xp: avatar.xp,
-        });
     }
     
     // ======== View Functions ========
