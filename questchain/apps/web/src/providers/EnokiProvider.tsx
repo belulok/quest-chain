@@ -50,7 +50,7 @@ export function EnokiProvider({ children }: { children: ReactNode }) {
           }}
           storage={sessionStorageAdapter}
         >
-          <EnokiFlowProvider apiKey="enoki_public_3724a62c6fd1a719bb4faf0ace29c7a9">
+          <EnokiFlowProvider apiKey={clientConfig.ENOKI_API_KEY || "enoki_public_3724a62c6fd1a719bb4faf0ace29c7a9"}>
             {children}
           </EnokiFlowProvider>
         </WalletProvider>
