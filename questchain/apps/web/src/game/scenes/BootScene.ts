@@ -47,24 +47,27 @@ export class BootScene extends Phaser.Scene {
   // Create placeholder assets if real assets aren't available yet
   private createPlaceholderAssets() {
     // Create a placeholder logo texture with a different key to avoid conflicts
-    const logoGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+    const logoGraphics = this.make.graphics({});
     logoGraphics.fillStyle(0xffd700);
     logoGraphics.fillRect(0, 0, 200, 100);
     logoGraphics.fillStyle(0x000000);
     logoGraphics.fillRect(20, 20, 160, 60);
     logoGraphics.generateTexture('placeholder-logo', 200, 100);
+    logoGraphics.destroy();
 
     // Create a placeholder loading bar background
-    const bgGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+    const bgGraphics = this.make.graphics({});
     bgGraphics.fillStyle(0x222222);
     bgGraphics.fillRect(0, 0, 400, 40);
     bgGraphics.generateTexture('loading-bar-bg', 400, 40);
+    bgGraphics.destroy();
 
     // Create a placeholder loading bar fill
-    const fillGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+    const fillGraphics = this.make.graphics({});
     fillGraphics.fillStyle(0x00ff00);
     fillGraphics.fillRect(0, 0, 400, 40);
     fillGraphics.generateTexture('loading-bar-fill', 400, 40);
+    fillGraphics.destroy();
   }
 
   create() {

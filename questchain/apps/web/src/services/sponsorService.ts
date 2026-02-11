@@ -1,6 +1,11 @@
 'use client';
 
-import { TransactionBlock } from '@mysten/sui/transactions';
+import { Transaction } from '@mysten/sui/transactions';
+import { SuiClient } from '@mysten/sui/client';
+import clientConfig from '@/config/clientConfig';
+
+// Create a Sui client for building transactions
+const suiClient = new SuiClient({ url: clientConfig.SUI_NETWORK });
 
 interface SponsorResponse {
   txBytes: string;
@@ -13,15 +18,12 @@ interface SponsorResponse {
  * @param txb The transaction block to sponsor
  * @returns The sponsored transaction data
  */
-export async function sponsorTransaction(txb: TransactionBlock): Promise<SponsorResponse> {
+export async function sponsorTransaction(txb: Transaction): Promise<SponsorResponse> {
   try {
     // Serialize the transaction
-    const txBytes = await txb.build({ 
+    const txBytes = await txb.build({
+      client: suiClient,
       onlyTransactionKind: true,
-      // We're using devnet for now
-      client: { 
-        url: 'https://fullnode.devnet.sui.io:443'
-      }
     });
 
     // Send to our sponsorship API

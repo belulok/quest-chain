@@ -26,8 +26,8 @@ export function WalletBridgeProvider() {
 
           // Check if we're already connected
           if (isConnected && address) {
-            console.log('Already connected, returning true');
-            return true;
+            console.log('Already connected');
+            return;
           }
 
           // Start the login process
@@ -41,10 +41,12 @@ export function WalletBridgeProvider() {
           const connected = !!window.walletBridge?.isConnected && !!window.walletBridge?.address;
           console.log('Login result:', { connected, address: window.walletBridge?.address });
 
-          return connected;
+          if (!connected) {
+            throw new Error('Login failed - wallet not connected');
+          }
         } catch (error) {
           console.error('Login failed:', error);
-          return false;
+          throw error;
         }
       },
       logout: async () => {
@@ -59,10 +61,12 @@ export function WalletBridgeProvider() {
           const disconnected = !window.walletBridge?.isConnected;
           console.log('Logout result:', { disconnected });
 
-          return disconnected;
+          if (!disconnected) {
+            throw new Error('Logout failed - wallet still connected');
+          }
         } catch (error) {
           console.error('Logout failed:', error);
-          return false;
+          throw error;
         }
       }
     };

@@ -1,6 +1,6 @@
 'use client';
 
-import { TransactionBlock } from '@mysten/sui/transactions';
+import { Transaction } from '@mysten/sui/transactions';
 import { SuiClient } from '@mysten/sui/client';
 import { sponsorTransaction } from './sponsorService';
 import clientConfig from '@/config/clientConfig';
@@ -15,7 +15,7 @@ const suiClient = new SuiClient({ url: clientConfig.SUI_NETWORK });
  * @returns The transaction digest
  */
 export async function executeTransaction(
-  txb: TransactionBlock,
+  txb: Transaction,
   signer: (txb: Uint8Array) => Promise<Uint8Array>
 ): Promise<string> {
   try {
@@ -24,14 +24,21 @@ export async function executeTransaction(
 
     // Convert base64 string to Uint8Array
     const txBytesArray = Uint8Array.from(Buffer.from(txBytes, 'base64'));
-    
+
     // Sign the transaction with the user's signer
     const userSignature = await signer(txBytesArray);
 
-    // Execute the transaction with both signatures
+    // Combine signatures for sponsored transaction
+    // The format is [user signature, sponsor signature]
+    const combinedSignatures = [
+      Buffer.from(userSignature).toString('base64'),
+      signature
+    ];
+
+    // Execute the transaction with combined signatures
     const result = await suiClient.executeTransactionBlock({
       transactionBlock: txBytes,
-      signatures: [signature, userSignature],
+      signature: combinedSignatures,
     });
 
     return result.digest;
@@ -60,15 +67,15 @@ export async function claimQuestXP(
     throw new Error('Package ID not configured');
   }
 
-  const txb = new TransactionBlock();
-  
+  const txb = new Transaction();
+
   // Call the claim_quest_xp function from the questchain module
   txb.moveCall({
     target: `${packageId}::questchain::claim_quest_xp`,
     arguments: [
       txb.object(avatarId),
       txb.object(questId),
-      txb.pure(xpAmount),
+      txb.pure.u64(xpAmount),
     ],
   });
 
@@ -94,15 +101,15 @@ export async function attackBoss(
     throw new Error('Package ID not configured');
   }
 
-  const txb = new TransactionBlock();
-  
+  const txb = new Transaction();
+
   // Call the attack_boss function from the questchain module
   txb.moveCall({
     target: `${packageId}::questchain::attack_boss`,
     arguments: [
       txb.object(avatarId),
       txb.object(bossId),
-      txb.pure(damage),
+      txb.pure.u64(damage),
     ],
   });
 
@@ -126,7 +133,7 @@ export async function equipItem(
     throw new Error('Package ID not configured');
   }
 
-  const txb = new TransactionBlock();
+  const txb = new Transaction();
   
   // Call the equip function from the questchain module
   txb.moveCall({
@@ -157,7 +164,7 @@ export async function openLootChest(
     throw new Error('Package ID not configured');
   }
 
-  const txb = new TransactionBlock();
+  const txb = new Transaction();
   
   // Call the open_chest function from the questchain module
   txb.moveCall({

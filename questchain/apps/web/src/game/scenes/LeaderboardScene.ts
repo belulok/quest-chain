@@ -98,7 +98,7 @@ export class LeaderboardScene extends Phaser.Scene {
     });
 
     // Add ESC key handler
-    this.input.keyboard.on('keydown-ESC', () => {
+    this.input.keyboard?.on('keydown-ESC', () => {
       this.scene.resume('WorldMapScene');
       this.scene.stop();
     });

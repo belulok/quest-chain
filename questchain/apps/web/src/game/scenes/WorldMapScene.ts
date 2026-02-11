@@ -411,6 +411,8 @@ export class WorldMapScene extends Phaser.Scene {
   }
 
   private setupControls() {
+    if (!this.input.keyboard) return;
+
     // Set up cursor keys
     this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -570,11 +572,13 @@ export class WorldMapScene extends Phaser.Scene {
       this.showBiomeInfo(biome);
 
       // Check for interaction (spacebar or enter)
-      const spaceKey = this.input.keyboard.checkDown(this.cursors.space, 500);
-      const enterKey = this.input.keyboard.checkDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER), 500);
+      if (this.input.keyboard) {
+        const spaceKey = this.input.keyboard.checkDown(this.cursors.space, 500);
+        const enterKey = this.input.keyboard.checkDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER), 500);
 
-      if ((spaceKey || enterKey) && biome.unlocked) {
-        this.enterBiome(biome);
+        if ((spaceKey || enterKey) && biome.unlocked) {
+          this.enterBiome(biome);
+        }
       }
     } else {
       // Hide biome info panel

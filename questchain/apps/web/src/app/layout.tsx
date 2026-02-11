@@ -12,8 +12,11 @@ const vt323 = VT323({
 });
 
 export const metadata: Metadata = {
-  title: 'QuestChain Academy',
+  title: 'QuestChain Academy - Proof of Skill. On-Chain',
   description: 'Own Your Skill, Level-Up for Real',
+  icons: {
+    icon: '/assets/QuestChain Assets/questchain_favicon.png',
+  },
 };
 
 export default function RootLayout({
