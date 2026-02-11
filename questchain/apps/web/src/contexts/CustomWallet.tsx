@@ -97,11 +97,11 @@ export function CustomWalletProvider({ children }: { children: ReactNode }) {
       // Clear any previous session data
       sessionStorage.removeItem('enoki-flow-session');
 
-      // Use hardcoded values to ensure they're properly set
+      // Use environment variables
       const authUrl = await enokiFlow.createAuthorizationURL({
         provider: "google",
-        network: "testnet",
-        clientId: "740538505233-0vbb2q24ohk1dbdb3grpoib6j6dhl1qq.apps.googleusercontent.com",
+        network: clientConfig.SUI_NETWORK_NAME,
+        clientId: clientConfig.GOOGLE_CLIENT_ID,
         redirectUrl: customRedirectUri,
         extraParams: {
           scope: ["openid", "email", "profile"],
