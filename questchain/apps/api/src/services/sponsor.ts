@@ -38,28 +38,31 @@ export async function sponsorTransaction(
     
     // Deserialize the transaction
     const txBlock = TransactionBlock.from(txBytes);
-    
+
     // Set the gas owner to the sponsor
     txBlock.setSender(sender);
     txBlock.setGasOwner(sponsorAddress);
-    
+
+    // Build the transaction to get bytes for dry run
+    const builtTxBytes = await txBlock.build({ client: suiClient });
+
     // Get gas budget
     const { effects } = await suiClient.dryRunTransactionBlock({
-      transactionBlock: txBlock,
+      transactionBlock: builtTxBytes,
     });
-    
+
     // Add 10% buffer to gas budget
-    const gasUsed = BigInt(effects.gasUsed.computationCost) + 
-                   BigInt(effects.gasUsed.storageCost) - 
+    const gasUsed = BigInt(effects.gasUsed.computationCost) +
+                   BigInt(effects.gasUsed.storageCost) -
                    BigInt(effects.gasUsed.storageRebate);
-    
+
     const gasBudget = (gasUsed * BigInt(110)) / BigInt(100);
     txBlock.setGasBudget(gasBudget);
-    
+
     // Build and sign the transaction
-    const { bytes } = await txBlock.build({ client: suiClient });
+    const finalTxBytes = await txBlock.build({ client: suiClient });
     const sponsoredTxBytes = await txBlock.sign({ client: suiClient, signer: sponsorKeypair });
-    
+
     return sponsoredTxBytes.bytes;
   } catch (error) {
     console.error('Error sponsoring transaction:', error);
